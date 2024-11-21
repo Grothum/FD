@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sjokoladeforgiftning Kalkulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .calculator-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .calculator-container h1 {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 1rem;
+            line-height: 1.5;
+            text-align: center;
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        #result.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        #result.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        #result.safe {
+            background-color: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <h1>Sjokoladeforgiftning Kalkulator</h1>
+        <form id="chocolateCalc">
+            <div class="form-group">
+                <label for="weight">Hundens vekt (kg):</label>
+                <input type="number" id="weight" step="0.1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="milkChocolate">Melkesjokolade (g):</label>
+                <input type="number" id="milkChocolate" step="0.1" value="0">
+            </div>
+
+            <div class="form-group">
+                <label for="darkChocolate">Mørk sjokolade (g):</label>
+                <input type="number" id="darkChocolate" step="0.1" value="0">
+            </div>
+
+            <div class="form-group">
+                <label for="bakingChocolate">Kokesjokolade (g):</label>
+                <input type="number" id="bakingChocolate" step="0.1" value="0">
+            </div>
+
+            <div class="form-group">
+                <label for="cocoaPowder">Kakaopulver (g):</label>
+                <input type="number" id="cocoaPowder" step="0.1" value="0">
+            </div>
+
+            <button type="button" onclick="calculateRisk()">Beregn</button>
+        </form>
+
+        <div id="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        function calculateRisk() {
+            const weight = parseFloat(document.getElementById('weight').value);
+            const inputs = {
+                milkChocolate: parseFloat(document.getElementById('milkChocolate').value),
+                darkChocolate: parseFloat(document.getElementById('darkChocolate').value),
+                bakingChocolate: parseFloat(document.getElementById('bakingChocolate').value),
+                cocoaPowder: parseFloat(document.getElementById('cocoaPowder').value)
+            };
+
+            const teobromin = {
+                milkChocolate: 1.2,
+                darkChocolate: 8,
+                bakingChocolate: 16,
+                cocoaPowder: 12
+            };
+
+            const koffein = {
+                milkChocolate: 0.2,
+                darkChocolate: 0.7,
+                bakingChocolate: 1.7,
+                cocoaPowder: 2.5
+            };
+
+            let teobrominDose = 0;
+            let koffeinDose = 0;
+
+            for (let type in inputs) {
+                teobrominDose += (inputs[type] * teobromin[type]);
+                koffeinDose += (inputs[type] * koffein[type]);
+            }
+
+            teobrominDose /= weight;
+            koffeinDose /= weight;
+            const totalDose = teobrominDose + koffeinDose;
+
+            // Logikk for akutt behandling
+            const needsEmergencyTreatment =
+                teobrominDose > 40 || koffeinDose > 30 || totalDose > 30;
+
+            const resultElement = document.getElementById('result');
+            resultElement.style.display = 'block';
+
+            let resultText = `
+                Dose teobromin: ${teobrominDose.toFixed(2)} mg/kg<br>
+                Dose koffein: ${koffeinDose.toFixed(2)} mg/kg<br>
+                Total dose: ${totalDose.toFixed(2)} mg/kg<br>
+                Akutt behandling: ${needsEmergencyTreatment ? '<strong>JA!!</strong>' : 'Nei'}<br>
+            `;
+
+            if (totalDose < 20) {
+                resultText += "Minimal risiko.";
+                resultElement.className = "safe";
+            } else if (totalDose < 40) {
+                resultText += "Moderat risiko. Kontakt veterinær.";
+                resultElement.className = "warning";
+            } else {
+                resultText += "Høy risiko. Oppsøk veterinær umiddelbart!";
+                resultElement.className = "danger";
+            }
+
+            resultElement.innerHTML = resultText;
+        }
+    </script>
+</body>
+</html>
